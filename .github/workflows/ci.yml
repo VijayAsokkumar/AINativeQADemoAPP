@@ -79,13 +79,25 @@ jobs:
           PY
 
       - name: Run API tests
+        if: always()
         run: |
           mkdir -p test-results
+          set +e
           pytest tests/api_test/test_api.py --junitxml=test-results/api-results.xml
+          echo "API_TEST_EXIT_CODE=$?" >> $GITHUB_ENV
+          exit 0
 
       - name: Run UI tests
+        if: always()
         run: |
-          pytest tests/ui_test/test_ui.py --junitxml=test-results/ui-results.xml
+          mkdir -p test-results/playwright
+          set +e
+          pytest tests/ui_test/test_ui.py \
+            --junitxml=test-results/ui-results.xml \
+            --output=test-results/playwright \
+            --screenshot=only-on-failure
+          echo "UI_TEST_EXIT_CODE=$?" >> $GITHUB_ENV
+          exit 0
 
       - name: Upload test reports
         if: always()
@@ -97,13 +109,27 @@ jobs:
             backend.log
             frontend.log
 
-      - name: Publish test summary
+      - name: Publish API test summary
         if: always()
         uses: dorny/test-reporter@v1
         with:
-          name: Pytest Results
-          path: test-results/*.xml
+          name: API Pytest Results
+          path: test-results/api-results.xml
           reporter: java-junit
+
+      - name: Publish UI test summary
+        if: always()
+        uses: dorny/test-reporter@v1
+        with:
+          name: UI Pytest Results
+          path: test-results/ui-results.xml
+          reporter: java-junit
+
+      - name: Fail workflow if any test phase failed
+        if: always()
+        run: |
+          test "${API_TEST_EXIT_CODE:-0}" = "0" || exit 1
+          test "${UI_TEST_EXIT_CODE:-0}" = "0" || exit 1
 
       - name: Stop services
         if: always()

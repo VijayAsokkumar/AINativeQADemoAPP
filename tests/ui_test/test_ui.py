@@ -23,7 +23,7 @@ VALID_USERNAME = os.getenv("VALID_USERNAME", "test")
 VALID_PASSWORD = os.getenv("VALID_PASSWORD", "test123")
 
 
-def test_user_can_log_in_via_ui_and_access_address_checker(page):
+def test_ui_user_can_log_in_and_start_address_lookup(page):
     page.goto(UI_BASE_URL)
 
     page.get_by_label("Username").fill(VALID_USERNAME)
@@ -38,7 +38,7 @@ def test_user_can_log_in_via_ui_and_access_address_checker(page):
     assert "Searching NZ Post matches" in search_message.text_content()
 
 
-def test_logged_out_user_cannot_use_address_checker(page):
+def test_ui_logged_out_user_cannot_use_address_checker(page):
     page.goto(UI_BASE_URL)
 
     page.get_by_label("Address").fill("8 Waterloo Quay")
