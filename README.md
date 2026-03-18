@@ -63,9 +63,25 @@ export NZPOST_CLIENT_ID=your_client_id
 export NZPOST_CLIENT_SECRET=your_client_secret
 ```
 
-Optional test values are already stored in:
-- [tests/.env.test](tests/.env.test)
-- [tests/.env.ui](tests/.env.ui)
+Optional test values can be added in:
+- `tests/.env.test`
+- `tests/.env.ui`
+
+Sample `tests/.env.test`:
+
+```env
+BASE_URL=http://localhost:8000
+VALID_USERNAME=test
+VALID_PASSWORD=test123
+```
+
+Sample `tests/.env.ui`:
+
+```env
+UI_BASE_URL=http://localhost:3000
+VALID_USERNAME=test
+VALID_PASSWORD=test123
+```
 
 ## Run Locally
 
@@ -115,8 +131,8 @@ If you want to run both app servers and tests together, use:
 ```
 
 Generated local reports:
-- [API report](test-results/api-report.html)
-- [UI report](test-results/ui-report.html)
+- `test-results/api-report.html`
+- `test-results/ui-report.html`
 
 ## CI Pipeline
 
@@ -149,8 +165,8 @@ CI uploads:
 - Playwright failure artifacts such as screenshots and page HTML
 
 Generated report files:
-- [test-results/api-report.html](test-results/api-report.html)
-- [test-results/ui-report.html](test-results/ui-report.html)
+- `test-results/api-report.html`
+- `test-results/ui-report.html`
 
 ## Notes
 
