@@ -28,3 +28,7 @@ tests/.env.*
 .DS_Store
 .idea/
 .vscode/
+backend.log
+.gitignore
+.gitignore
+frontend.log

@@ -123,6 +123,7 @@ jobs:
           name: API Pytest Results
           path: test-results/api-results.xml
           reporter: java-junit
+          fail-on-error: "false"
 
       - name: Publish UI test summary
         if: always()
@@ -131,6 +132,7 @@ jobs:
           name: UI Pytest Results
           path: test-results/ui-results.xml
           reporter: java-junit
+          fail-on-error: "false"
 
       - name: Fail workflow if any test phase failed
         if: always()
