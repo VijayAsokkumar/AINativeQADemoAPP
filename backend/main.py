@@ -10,9 +10,8 @@ from pydantic import BaseModel
 
 APP_USERNAME = "test"
 APP_PASSWORD = "test123"
-NZPOST_CLIENT_ID = os.getenv("NZPOST_CLIENT_ID", "c951758c3a9b48e284838a66315daa23")
-NZPOST_CLIENT_SECRET = os.getenv("NZPOST_CLIENT_SECRET", "23AA93661039439aBA84e52D9E8FFE8a")
-NZPOST_USER_NAME = os.getenv("NZPOST_USER_NAME", "")
+NZPOST_CLIENT_ID = os.getenv("NZPOST_CLIENT_ID", "")
+NZPOST_CLIENT_SECRET = os.getenv("NZPOST_CLIENT_SECRET", "")
 NZPOST_TOKEN_URL = "https://oauth.nzpost.co.nz/as/token.oauth2"
 NZPOST_FIND_URL = "https://api.nzpost.co.nz/addresschecker/1.0/find"
 
@@ -136,8 +135,6 @@ def fetch_addresses(query: str) -> list[dict]:
         "Authorization": f"Bearer {access_token}",
         "Accept": "application/json",
     }
-    if NZPOST_USER_NAME:
-        headers["user_name"] = NZPOST_USER_NAME
 
     try:
         response = requests.get(

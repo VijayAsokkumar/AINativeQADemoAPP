@@ -1,0 +1,158 @@
+name: CI
+
+permissions:
+  contents: read
+  checks: write
+
+on:
+  push:
+    paths:
+      - "backend/**"
+      - "frontend/**"
+      - "tests/**"
+      - "requirements.txt"
+      - ".github/workflows/ci.yml"
+  pull_request:
+    paths:
+      - "backend/**"
+      - "frontend/**"
+      - "tests/**"
+      - "requirements.txt"
+      - ".github/workflows/ci.yml"
+
+jobs:
+  ai_native_qa_demo_app_tests:
+    runs-on: ubuntu-latest
+    environment: ci
+    timeout-minutes: 30
+    env:
+      BASE_URL: http://127.0.0.1:8000
+      UI_BASE_URL: http://127.0.0.1:3000
+      VALID_USERNAME: test
+      VALID_PASSWORD: test123
+      NZPOST_CLIENT_ID: ${{ secrets.NZPOST_CLIENT_ID }}
+      NZPOST_CLIENT_SECRET: ${{ secrets.NZPOST_CLIENT_SECRET }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Install Playwright browsers
+        run: python -m playwright install --with-deps chromium
+
+      - name: Start backend
+        run: |
+          python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000 > backend.log 2>&1 &
+          echo $! > backend.pid
+
+      - name: Start frontend
+        run: |
+          python -m http.server 3000 --bind 127.0.0.1 --directory frontend > frontend.log 2>&1 &
+          echo $! > frontend.pid
+
+      - name: Wait for services
+        run: |
+          python - <<'PY'
+          import time
+          import urllib.request
+
+          urls = ["http://127.0.0.1:8000/docs", "http://127.0.0.1:3000"]
+          for url in urls:
+              for _ in range(60):
+                  try:
+                      with urllib.request.urlopen(url, timeout=2):
+                          break
+                  except Exception:
+                      time.sleep(1)
+              else:
+                  raise SystemExit(f"Service did not become ready: {url}")
+          PY
+
+      - name: Run API tests
+        if: always()
+        run: |
+          mkdir -p test-results
+          set +e
+          pytest tests/api_test/test_api.py \
+            --junitxml=test-results/api-results.xml \
+            --html=test-results/api-report.html \
+            --self-contained-html
+          echo "API_TEST_EXIT_CODE=$?" >> $GITHUB_ENV
+          exit 0
+
+      - name: Run UI tests
+        if: always()
+        run: |
+          mkdir -p test-results test-results/playwright
+          set +e
+          pytest tests/ui_test/test_ui.py \
+            --junitxml=test-results/ui-results.xml \
+            --html=test-results/ui-report.html \
+            --self-contained-html \
+            --output=test-results/playwright \
+            --screenshot=only-on-failure \
+            --tracing=retain-on-failure \
+            --video=retain-on-failure
+          echo "UI_TEST_EXIT_CODE=$?" >> $GITHUB_ENV
+          exit 0
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            test-results/
+            backend.log
+            frontend.log
+
+      - name: Publish API test summary
+        if: always()
+        uses: dorny/test-reporter@v1
+        with:
+          name: API Pytest Results
+          path: test-results/api-results.xml
+          reporter: java-junit
+          fail-on-error: "false"
+
+      - name: Publish UI test summary
+        if: always()
+        uses: dorny/test-reporter@v1
+        with:
+          name: UI Pytest Results
+          path: test-results/ui-results.xml
+          reporter: java-junit
+          fail-on-error: "false"
+
+      - name: Fail workflow if any test phase failed
+        if: always()
+        run: |
+          failed=0
+
+          if [ "${API_TEST_EXIT_CODE:-0}" != "0" ]; then
+            echo "API tests failed."
+            failed=1
+          fi
+
+          if [ "${UI_TEST_EXIT_CODE:-0}" != "0" ]; then
+            echo "UI tests failed."
+            failed=1
+          fi
+
+          exit "${failed}"
+
+      - name: Stop services
+        if: always()
+        run: |
+          test -f backend.pid && kill $(cat backend.pid) || true
+          test -f frontend.pid && kill $(cat frontend.pid) || true
