@@ -64,8 +64,8 @@ export NZPOST_CLIENT_SECRET=your_client_secret
 ```
 
 Optional test values are already stored in:
-- [tests/.env.test](/Users/vijayasok89/Documents/project_works/git/AINativeQADemoAPP/tests/.env.test)
-- [tests/.env.ui](/Users/vijayasok89/Documents/project_works/git/AINativeQADemoAPP/tests/.env.ui)
+- [tests/.env.test](tests/.env.test)
+- [tests/.env.ui](tests/.env.ui)
 
 ## Run Locally
 
@@ -114,10 +114,14 @@ If you want to run both app servers and tests together, use:
 ./run_local_tests.sh
 ```
 
+Generated local reports:
+- [API report](test-results/api-report.html)
+- [UI report](test-results/ui-report.html)
+
 ## CI Pipeline
 
 GitHub Actions workflow:
-- [.github/workflows/ci.yml](/Users/vijayasok89/Documents/project_works/git/AINativeQADemoAPP/.github/workflows/ci.yml)
+- [.github/workflows/ci.yml](.github/workflows/ci.yml)
 
 The pipeline:
 - runs on pushes and pull requests
@@ -143,6 +147,10 @@ CI uploads:
 - backend log
 - frontend log
 - Playwright failure artifacts such as screenshots and page HTML
+
+Generated report files:
+- [test-results/api-report.html](test-results/api-report.html)
+- [test-results/ui-report.html](test-results/ui-report.html)
 
 ## Notes
 
