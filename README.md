@@ -124,12 +124,6 @@ UI tests:
 pytest tests/ui_test/test_ui.py
 ```
 
-If you want to run both app servers and tests together, use:
-
-```bash
-./run_local_tests.sh
-```
-
 Generated local reports:
 - `test-results/api-report.html`
 - `test-results/ui-report.html`
