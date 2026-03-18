@@ -54,7 +54,7 @@ def test_ui_user_can_log_in_and_start_address_lookup(page):
     logger.info("Search message text: %s", search_message.text_content())
     logger.info("Search summary text: %s", result_summary)
     logger.info("Search table rows: %s", table_rows)
-    assert "Searching NZ Post matches" in search_message.text_content()
+    assert "Address lookup completed successfully" in search_message.text_content()
 
 
 def test_ui_logged_out_user_cannot_use_address_checker(page):
