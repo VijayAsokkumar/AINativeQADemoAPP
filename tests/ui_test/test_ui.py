@@ -39,6 +39,8 @@ def test_ui_user_can_log_in_and_start_address_lookup(page):
 
     page.get_by_text(f"Logged in as {VALID_USERNAME}").wait_for()
     logger.info("Verified logged-in state")
+    page.get_by_label("Address").fill("8 Waterloo Quay")
+    logger.info("Entered valid address for lookup")
     page.get_by_role("button", name="Check Address").click()
     logger.info("Clicked address check")
 
