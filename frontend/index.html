@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NZ Post Address Checker</title>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --panel: #ffffff;
+      --panel-border: #d9e2ec;
+      --text: #102a43;
+      --muted: #627d98;
+      --primary: #0b7285;
+      --primary-dark: #095c6b;
+      --success-bg: #e6fcf5;
+      --success-text: #087f5b;
+      --error-bg: #fff1f0;
+      --error-text: #c92a2a;
+      --shadow: 0 20px 50px rgba(16, 42, 67, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Helvetica Neue", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, #d9f3ff 0, transparent 28%),
+        linear-gradient(180deg, #f8fbff 0%, var(--bg) 100%);
+      min-height: 100vh;
+    }
+
+    .page {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 32px 20px 56px;
+    }
+
+    .hero {
+      margin-bottom: 24px;
+    }
+
+    .hero h1 {
+      margin: 0 0 10px;
+      font-size: clamp(2rem, 4vw, 3rem);
+      line-height: 1.05;
+    }
+
+    .hero p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 1rem;
+      max-width: 720px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(280px, 360px) 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      padding: 22px;
+    }
+
+    .card h2 {
+      margin: 0 0 8px;
+      font-size: 1.15rem;
+    }
+
+    .card p {
+      margin: 0 0 18px;
+      color: var(--muted);
+    }
+
+    .field-group {
+      display: grid;
+      gap: 14px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 0.92rem;
+      font-weight: 600;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid #bcccdc;
+      border-radius: 12px;
+      font-size: 0.98rem;
+      color: var(--text);
+      background: #fff;
+    }
+
+    input:focus {
+      outline: 2px solid rgba(11, 114, 133, 0.18);
+      border-color: var(--primary);
+    }
+
+    button {
+      border: 0;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 0.98rem;
+      font-weight: 700;
+      color: #fff;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      cursor: pointer;
+      transition: transform 120ms ease, opacity 120ms ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    button:disabled {
+      opacity: 0.65;
+      cursor: wait;
+      transform: none;
+    }
+
+    .status-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: #e9f2ff;
+      color: #1f4f8b;
+      font-size: 0.92rem;
+      font-weight: 700;
+    }
+
+    .badge::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .results-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .results-header p {
+      margin: 0;
+    }
+
+    .message {
+      margin: 0 0 16px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      font-size: 0.96rem;
+    }
+
+    .message.hidden {
+      display: none;
+    }
+
+    .message.info {
+      background: #eef6ff;
+      color: #1d4e89;
+    }
+
+    .message.success {
+      background: var(--success-bg);
+      color: var(--success-text);
+    }
+
+    .message.error {
+      background: var(--error-bg);
+      color: var(--error-text);
+    }
+
+    .table-wrap {
+      overflow: auto;
+      border: 1px solid var(--panel-border);
+      border-radius: 16px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 640px;
+      background: #fff;
+    }
+
+    th,
+    td {
+      padding: 14px 16px;
+      text-align: left;
+      border-bottom: 1px solid #e9eef5;
+      vertical-align: top;
+    }
+
+    th {
+      background: #f8fafc;
+      font-size: 0.84rem;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .empty-state {
+      padding: 24px 16px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .hint {
+      margin-top: 14px;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .login-panel {
+      display: grid;
+      gap: 14px;
+    }
+
+    .login-panel[hidden] {
+      display: none;
+    }
+
+    .logged-in-box {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding: 16px;
+      border-radius: 16px;
+      background: #f8fafc;
+      border: 1px solid var(--panel-border);
+    }
+
+    .logged-in-box strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 1rem;
+    }
+
+    .logged-in-box span {
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .secondary-button {
+      color: var(--text);
+      background: #e9eef5;
+    }
+
+    @media (max-width: 840px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <h1>Address Search Console</h1>
+      <p>Log in, search an address against the NZ Post service, and review the top matching results in a clean table.</p>
+    </section>
+
+    <section class="layout">
+      <article class="card">
+        <h2>Login</h2>
+        <div id="loginFormPanel" class="login-panel">
+          <p>Use the demo app credentials to unlock address lookup.</p>
+          <p id="loginMessage" class="message hidden"></p>
+
+          <div class="field-group">
+            <div>
+              <label for="username">Username</label>
+              <input type="text" id="username" name="username" placeholder="Enter username">
+            </div>
+
+            <div>
+              <label for="password">Password</label>
+              <input type="password" id="password" name="password" placeholder="Enter password">
+            </div>
+
+            <button id="loginButton" type="button">Login</button>
+          </div>
+        </div>
+
+        <div id="loggedInPanel" class="login-panel" hidden>
+          <p id="loggedInMessage" class="message hidden"></p>
+          <div class="logged-in-box">
+            <div>
+              <strong id="loggedInUser">Logged in</strong>
+              <span>Address lookup is ready.</span>
+            </div>
+            <button id="logoutButton" type="button" class="secondary-button">Logout</button>
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="status-bar">
+          <span class="badge" id="loginStatus">Not logged in</span>
+        </div>
+
+        <h2>Address Checker</h2>
+        <p>Search a full or partial address and review the best matches returned by the backend.</p>
+
+        <div class="field-group">
+          <div>
+            <label for="address">Address</label>
+            <input type="text" id="address" name="address" placeholder="Try 8 Waterloo Quay">
+          </div>
+
+          <button id="checkAddressButton" type="button">Check Address</button>
+        </div>
+
+        <p id="resultMessage" class="message hidden"></p>
+
+        <div class="results-header">
+          <p id="resultSummary"></p>
+        </div>
+
+        <div class="table-wrap" id="tableWrap" hidden>
+          <table id="resultsTable">
+            <thead>
+              <tr>
+                <th>Full Address</th>
+                <th>Source</th>
+                <th>DPID</th>
+              </tr>
+            </thead>
+            <tbody id="resultsTableBody"></tbody>
+          </table>
+        </div>
+
+        <div id="emptyState" class="empty-state">
+          Search results will appear here.
+        </div>
+
+       
+      </article>
+    </section>
+  </main>
+
+  <script>
+    const API_BASE_URL = "http://localhost:8000";
+    const MAX_VISIBLE_RESULTS = 10;
+
+    let authToken = "";
+
+    const usernameInput = document.getElementById("username");
+    const passwordInput = document.getElementById("password");
+    const loginFormPanel = document.getElementById("loginFormPanel");
+    const loggedInPanel = document.getElementById("loggedInPanel");
+    const loginButton = document.getElementById("loginButton");
+    const logoutButton = document.getElementById("logoutButton");
+    const loginMessage = document.getElementById("loginMessage");
+    const loggedInMessage = document.getElementById("loggedInMessage");
+    const loginStatus = document.getElementById("loginStatus");
+    const loggedInUser = document.getElementById("loggedInUser");
+    const addressInput = document.getElementById("address");
+    const checkAddressButton = document.getElementById("checkAddressButton");
+    const resultMessage = document.getElementById("resultMessage");
+    const resultSummary = document.getElementById("resultSummary");
+    const tableWrap = document.getElementById("tableWrap");
+    const resultsTableBody = document.getElementById("resultsTableBody");
+    const emptyState = document.getElementById("emptyState");
+
+    function setLoginState(isLoggedIn, username) {
+      loginStatus.textContent = isLoggedIn ? "Logged in" : "Not logged in";
+      loginStatus.style.background = isLoggedIn ? "#e6fcf5" : "#e9f2ff";
+      loginStatus.style.color = isLoggedIn ? "#087f5b" : "#1f4f8b";
+      loginFormPanel.hidden = isLoggedIn;
+      loggedInPanel.hidden = !isLoggedIn;
+      loggedInUser.textContent = isLoggedIn ? "Logged in as " + username : "Logged in";
+    }
+
+    function showLoginMessage(message, type) {
+      const target = loggedInPanel.hidden ? loginMessage : loggedInMessage;
+      const other = loggedInPanel.hidden ? loggedInMessage : loginMessage;
+
+      target.textContent = message;
+      target.className = "message " + type;
+      other.textContent = "";
+      other.className = "message hidden";
+    }
+
+    function clearLoginMessages() {
+      loginMessage.textContent = "";
+      loginMessage.className = "message hidden";
+      loggedInMessage.textContent = "";
+      loggedInMessage.className = "message hidden";
+    }
+
+    async function logout() {
+      const currentToken = authToken;
+
+      if (currentToken) {
+        try {
+          await fetch(API_BASE_URL + "/logout", {
+            method: "POST",
+            headers: {
+              "Authorization": "Bearer " + currentToken
+            }
+          });
+        } catch (error) {
+          // Ignore logout request failures and still clear local state.
+        }
+      }
+
+      authToken = "";
+      usernameInput.value = "";
+      passwordInput.value = "";
+      setLoginState(false, "");
+      clearResults();
+      clearLoginMessages();
+      showLoginMessage("You have been logged out.", "info");
+    }
+
+    function showMessage(message, type) {
+      resultMessage.textContent = message;
+      resultMessage.className = "message " + type;
+    }
+
+    function clearResults() {
+      resultSummary.textContent = "";
+      resultsTableBody.innerHTML = "";
+      tableWrap.hidden = true;
+      emptyState.hidden = false;
+    }
+
+    function showResultError(message) {
+      showMessage(message, "error");
+      clearResults();
+    }
+
+    function showResultInfo(message) {
+      showMessage(message, "info");
+      clearResults();
+    }
+
+    function showAddresses(addresses, totalMatches) {
+      const visibleAddresses = addresses.slice(0, MAX_VISIBLE_RESULTS);
+
+      showMessage("Address lookup completed successfully.", "success");
+      resultSummary.textContent =
+        "Total matches: " + totalMatches + ". Showing top " + visibleAddresses.length + ".";
+      resultsTableBody.innerHTML = "";
+
+      visibleAddresses.forEach(function (address) {
+        const row = document.createElement("tr");
+
+        const fullAddressCell = document.createElement("td");
+        fullAddressCell.textContent = address.full_address || "";
+
+        const sourceCell = document.createElement("td");
+        sourceCell.textContent = address.source || "";
+
+        const dpidCell = document.createElement("td");
+        dpidCell.textContent = address.dpid || "";
+
+        row.appendChild(fullAddressCell);
+        row.appendChild(sourceCell);
+        row.appendChild(dpidCell);
+        resultsTableBody.appendChild(row);
+      });
+
+      tableWrap.hidden = visibleAddresses.length === 0;
+      emptyState.hidden = visibleAddresses.length > 0;
+    }
+
+    async function parseResponse(response) {
+      const data = await response.json().catch(function () {
+        return {};
+      });
+
+      if (!response.ok) {
+        throw new Error(data.detail || data.message || "Request failed");
+      }
+
+      return data;
+    }
+
+    async function handleLogin() {
+      const username = usernameInput.value.trim();
+      const password = passwordInput.value;
+
+      clearLoginMessages();
+      loginButton.disabled = true;
+      loginButton.textContent = "Logging in...";
+
+      try {
+        const response = await fetch(API_BASE_URL + "/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ username: username, password: password })
+        });
+
+        const data = await parseResponse(response);
+        authToken = data.token;
+        setLoginState(true, username);
+        showLoginMessage("Login successful.", "success");
+      } catch (error) {
+        authToken = "";
+        setLoginState(false, "");
+        showLoginMessage(error.message || "An unexpected error occurred", "error");
+      } finally {
+        loginButton.disabled = false;
+        loginButton.textContent = "Login";
+      }
+    }
+
+    async function handleAddressCheck() {
+      const address = addressInput.value.trim();
+
+      if (!authToken) {
+        showLoginMessage("Please login first.", "error");
+        return;
+      }
+
+      checkAddressButton.disabled = true;
+      checkAddressButton.textContent = "Checking...";
+      showResultInfo("Searching NZ Post matches...");
+
+      try {
+        const response = await fetch(
+          API_BASE_URL + "/address-check?q=" + encodeURIComponent(address),
+          {
+            method: "GET",
+            headers: {
+              "Authorization": "Bearer " + authToken
+            }
+          }
+        );
+
+        const data = await parseResponse(response);
+
+        if (data.status === "valid") {
+          showAddresses(data.addresses || [], data.total_matches || 0);
+          return;
+        }
+
+        showResultInfo(data.message || "Address is invalid");
+      } catch (error) {
+        showResultError(error.message || "An unexpected error occurred");
+      } finally {
+        checkAddressButton.disabled = false;
+        checkAddressButton.textContent = "Check Address";
+      }
+    }
+
+    loginButton.addEventListener("click", handleLogin);
+    logoutButton.addEventListener("click", logout);
+    checkAddressButton.addEventListener("click", handleAddressCheck);
+    setLoginState(false, "");
+  </script>
+</body>
+</html>
