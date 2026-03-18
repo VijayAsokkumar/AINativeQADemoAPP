@@ -46,7 +46,12 @@ def test_ui_user_can_log_in_and_start_address_lookup(page):
 
     search_message = page.locator("#resultMessage")
     search_message.wait_for()
+    result_summary = page.locator("#resultSummary").text_content()
+    table_rows = page.locator("#resultsTableBody tr").all_text_contents()
+
     logger.info("Search message text: %s", search_message.text_content())
+    logger.info("Search summary text: %s", result_summary)
+    logger.info("Search table rows: %s", table_rows)
     assert "Searching NZ Post matches" in search_message.text_content()
 
 
