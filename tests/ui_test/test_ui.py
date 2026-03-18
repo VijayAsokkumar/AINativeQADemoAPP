@@ -3,7 +3,7 @@ from pathlib import Path
 
 
 def load_ui_environment() -> None:
-    env_file = Path(__file__).with_name(".env.ui")
+    env_file = Path(__file__).resolve().parent.parent / ".env.ui"
     if not env_file.exists():
         return
 

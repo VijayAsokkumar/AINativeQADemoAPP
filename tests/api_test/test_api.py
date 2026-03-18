@@ -5,7 +5,7 @@ import requests
 
 
 def load_test_environment() -> None:
-    env_file = Path(__file__).with_name(".env.test")
+    env_file = Path(__file__).resolve().parent.parent / ".env.test"
     if not env_file.exists():
         return
 
