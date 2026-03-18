@@ -137,8 +137,19 @@ jobs:
       - name: Fail workflow if any test phase failed
         if: always()
         run: |
-          test "${API_TEST_EXIT_CODE:-0}" = "0" || exit 1
-          test "${UI_TEST_EXIT_CODE:-0}" = "0" || exit 1
+          failed=0
+
+          if [ "${API_TEST_EXIT_CODE:-0}" != "0" ]; then
+            echo "API tests failed."
+            failed=1
+          fi
+
+          if [ "${UI_TEST_EXIT_CODE:-0}" != "0" ]; then
+            echo "UI tests failed."
+            failed=1
+          fi
+
+          exit "${failed}"
 
       - name: Stop services
         if: always()

@@ -24,6 +24,7 @@ load_ui_environment()
 UI_BASE_URL = os.getenv("UI_BASE_URL", "http://localhost:3000")
 VALID_USERNAME = os.getenv("VALID_USERNAME", "test")
 VALID_PASSWORD = os.getenv("VALID_PASSWORD", "test123")
+SEARCH_ADDRESS = "8 Waterloo Quay"
 
 
 def test_ui_user_can_log_in_and_start_address_lookup(page):
@@ -39,10 +40,11 @@ def test_ui_user_can_log_in_and_start_address_lookup(page):
 
     page.get_by_text(f"Logged in as {VALID_USERNAME}").wait_for()
     logger.info("Verified logged-in state")
-    page.get_by_label("Address").fill("8 Waterloo Quay")
-    logger.info("Entered valid address for lookup")
+    page.get_by_label("Address").fill(SEARCH_ADDRESS)
+    logger.info("Searching for address: %s", SEARCH_ADDRESS)
     page.get_by_role("button", name="Check Address").click()
     logger.info("Clicked address check")
+    page.wait_for_timeout(3000)
 
     search_message = page.locator("#resultMessage")
     search_message.wait_for()
@@ -60,8 +62,8 @@ def test_ui_logged_out_user_cannot_use_address_checker(page):
     page.goto(UI_BASE_URL)
     logger.info("Opened UI at %s", UI_BASE_URL)
 
-    page.get_by_label("Address").fill("8 Waterloo Quay")
-    logger.info("Filled address field while logged out")
+    page.get_by_label("Address").fill(SEARCH_ADDRESS)
+    logger.info("Filled address field while logged out with address: %s", SEARCH_ADDRESS)
     page.get_by_role("button", name="Check Address").click()
     logger.info("Clicked address check while logged out")
 
