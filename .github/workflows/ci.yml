@@ -81,11 +81,11 @@ jobs:
       - name: Run API tests
         if: always()
         run: |
-          mkdir -p test-results/api
+          mkdir -p test-results
           set +e
           pytest tests/api_test/test_api.py \
             --junitxml=test-results/api-results.xml \
-            --html=test-results/api/report.html \
+            --html=test-results/api-report.html \
             --self-contained-html
           echo "API_TEST_EXIT_CODE=$?" >> $GITHUB_ENV
           exit 0
@@ -93,11 +93,11 @@ jobs:
       - name: Run UI tests
         if: always()
         run: |
-          mkdir -p test-results/ui test-results/playwright
+          mkdir -p test-results test-results/playwright
           set +e
           pytest tests/ui_test/test_ui.py \
             --junitxml=test-results/ui-results.xml \
-            --html=test-results/ui/report.html \
+            --html=test-results/ui-report.html \
             --self-contained-html \
             --output=test-results/playwright \
             --screenshot=only-on-failure \
