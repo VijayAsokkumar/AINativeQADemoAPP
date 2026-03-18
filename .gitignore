@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# Virtual environments
+.venv/
+venv/
+env/
+demoappVenv/
+
+# Test and coverage artifacts
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+playwright-report/
+test-results/
+
+# Environment files
+.env
+.env.*
+tests/.env.*
+
+# Editor and OS files
+.DS_Store
+.idea/
+.vscode/
